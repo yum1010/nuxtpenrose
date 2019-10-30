@@ -1,0 +1,30 @@
+<template>
+ <polygon :points="points" :fill="onoff==1? 'pink' : 'cyan'" stroke="black" @click="toggle"></polygon>
+</template>
+
+<script>
+  export default{
+  props:['points'],
+  }
+</script>
+
+Vue.component('tile',{
+    template:'<polygon :points="points" :fill="onoff==1? \'pink\' : \'cyan\'" stroke="black" @click="toggle"></polygon>',
+    props:['points','onoff'],
+    methods:{
+	toggle(){
+	    this.$emit('toggle');
+	}
+    }
+    /*
+     <polygon v-for="(t,i) in rhombi"
+	       @click="toggle(i)"
+	       @mouseover="guide(i)"
+	       @mouseleave="unguide(i)"
+	       :points="t"
+	       :stroke="guided[i]==1? 'red' : 'black'"
+	       :fill="onoff[i]==1? 'pink' : 'cyan'"
+	       :fill-opacity="guided[i]==1? 0:1">
+      </polygon>
+*/
+})
