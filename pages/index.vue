@@ -11,8 +11,8 @@
 <script>
 import board from '~/components/board.vue'
 
-export default {
-  components: {
+export default{
+  components:{
       board
   },
     data(){

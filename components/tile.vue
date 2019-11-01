@@ -1,10 +1,14 @@
 <template>
- <polygon :points="points" :fill="onoff==1? 'pink' : 'cyan'" stroke="black" @click="toggle"</polygon>
+ <polygon :points="points" :fill="onoff==1? 'pink' : 'cyan'" stroke="black" @click="toggle"></polygon>
 </template>
 
 <script>
-  export default{
-  props:['points'],
-  }
+export default{
+     props:['points','onoff'],
+     methods:{
+         toggle(){
+             this.$emit('toggle');
+         }
+     }
+}
 </script>
-
