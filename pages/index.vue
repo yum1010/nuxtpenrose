@@ -3,7 +3,8 @@
     column
     justify-center
     align-center
-  >
+     >
+    <v-select :items="[1,2,3,4]" label="level" v-model="N"></v-select>
    <board :N="N"></board>
   </v-layout>
 </template>

@@ -1,21 +1,84 @@
 <template>
 <svg width="800" height="800">
-  <rhombus v-for="(t,i) in tiling" :points="t"></rhombus>
+  <tile v-for="(t,i) in tiling"
+	:id="i" :onoff="onoff[i]" :points="t"
+	@toggle="toggle"
+	></tile>
   <ansbutton></ansbutton>
 </svg>
 </template>
 
 <script>
 import ansbutton from '~/components/ansbutton.vue'
-import rhombus from '~/components/tile.vue'
+import tile from '~/components/tile.vue'
 
 export default{
     components:{
 	ansbutton,
-	rhombus
+	tile
     },
     props: ['N'],
+    data(){
+	return{
+	    onoff:[],//ボードの状態
+	    rhombi:null
+	}
+    },
+    created(){//一回だけ
+	  this.onoff=[];
+	    for(let t in this.tiling){
+		this.onoff.push(0);
+	    }
+    },
+    watch:{//Nが書き換わったとき
+	N: function(){
+	    this.onoff=[];
+	    for(let t in this.tiling){
+		this.onoff.push(0);
+	    }
+	}
+    },
+    methods:{
+	toggle: function(i){
+	    // console.log(i);
+	    this.onoff.splice(i,1,1-this.onoff[i]);//i番目を1つだけ1なら0に0なら1に
+	    for(let j of this.adjacentList[i]){//隣接するひし形を一つ取り出して
+		this.onoff.splice(j,1,1-this.onoff[j]);//隣接するひし形反転
+	    }
+	},
+	isAdjacent: function(r,s){//二つのひし形r,sが隣接しているか
+	    let count=0;
+	    for(let v of r){
+		for(let w of s){
+		    if(v==w){
+			count++;
+		    }
+		}
+	    }
+	    if(count==2){
+		return true;
+	    }else{
+		return false;
+	    }
+	}
+    },
+   
     computed:{
+	adjacentList(){
+	    let List = [];//それに隣接するひし形の添え字
+	    for(let i in this.rhombi){
+		let alist=[];//一つのrhonbi
+		//A[i][i]=1;//自分自身も反転
+		for(let j in this.rhombi){
+		    if(this.isAdjacent(this.rhombi[i],this.rhombi[j])){//ひし形iとjが隣接してるなら
+			alist.push(j);
+			//A[j][i]=1;//スイッチ行列に1を
+		    }
+		}
+		List.push(alist);
+	    }
+	    return List;
+	},
 	tiling(){
 	    let N=this.N;
 	    let vertices = [[0,0,0,0,0],//中心
@@ -168,6 +231,7 @@ export default{
 		}
 	    }
 	    let rhombi= Arhombi.concat(Brhombi);
+	    this.rhombi=rhombi;
 	    let Astr = [];
 	    for(let T of Arhombi){//Atriangles[0]から丸ごとTに入れていく
 		let triangleStr = "";

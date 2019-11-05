@@ -1,13 +1,13 @@
 <template>
- <polygon :points="points" :fill="onoff==1? 'pink' : 'cyan'" stroke="black" @click="toggle"></polygon>
+ <polygon :points="points" :fill="onoff==1? 'pink' : 'cyan'" stroke="black" @click="toggle(id)"></polygon>
 </template>
 
 <script>
 export default{
-     props:['points','onoff'],
+     props:['points','onoff','id'],//頂点の座標、タイルの状態、押されたタイルのid
      methods:{
-         toggle(){
-             this.$emit('toggle');
+         toggle(id){
+             this.$emit('toggle',id);//toggleされたことを教える
          }
      }
 }
