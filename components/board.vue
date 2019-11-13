@@ -1,10 +1,10 @@
 <template>
 <svg width="800" height="800">
   <tile v-for="(t,i) in tiling"
-	:id="i" :onoff="onoff[i]" :points="t"
+	:id="i" :onoff="onoff[i]" :guided="guided[i]" :points="t"
 	@toggle="toggle"
 	></tile>
-  <ansbutton></ansbutton>
+  <ansbutton @solve="solve"></ansbutton>
 </svg>
 </template>
 
@@ -21,20 +21,25 @@ export default{
     data(){
 	return{
 	    onoff:[],//ボードの状態
+	    guided:[],//答え
 	    rhombi:null
 	}
     },
     created(){//一回だけ
-	  this.onoff=[];
+	this.onoff=[];
+	this.guided=[];
 	    for(let t in this.tiling){
-		this.onoff.push(0);
+		this.onoff.push(1);
+		this.guided.push(false);
 	    }
     },
     watch:{//Nが書き換わったとき
 	N: function(){
 	    this.onoff=[];
+	    this.guided=[];
 	    for(let t in this.tiling){
-		this.onoff.push(0);
+		this.onoff.push(1);
+		this.guided.push(false);
 	    }
 	}
     },
@@ -45,6 +50,7 @@ export default{
 	    for(let j of this.adjacentList[i]){//隣接するひし形を一つ取り出して
 		this.onoff.splice(j,1,1-this.onoff[j]);//隣接するひし形反転
 	    }
+	    this.guided.splice(i,1,false);
 	},
 	isAdjacent: function(r,s){//二つのひし形r,sが隣接しているか
 	    let count=0;
@@ -60,6 +66,33 @@ export default{
 	    }else{
 		return false;
 	    }
+	},
+	solve: function(){
+	    let A= [];//スイッチ行列(押すことで反転する場所)
+	    for(let i in this.rhombi){
+		A.push([]);
+		for(let j in this.rhombi){
+		    A[i].push(0);
+		}
+	    }
+	    for(let i in this.rhombi){
+		A[i][i]=1;//自分自身も反転
+		for(let j in this.rhombi){
+		    if(this.isAdjacent(this.rhombi[i],this.rhombi[j])){//ひし形iとjが隣接してるなら
+			A[j][i]=1;//スイッチ行列に1を
+		    }
+		}
+	    }
+	     for(let i in this.onoff){
+		A[i].push(this.onoff[i]);//現在の盤面を付け加える
+	     }
+	    let ans=gauss(A);
+	    for(let i in this.guided){
+		if(ans[i]==1){
+		    this.guided.splice(i,1,true);
+		}
+	    }
+	    console.log(gauss(A));
 	}
     },
    
@@ -67,7 +100,7 @@ export default{
 	adjacentList(){
 	    let List = [];//それに隣接するひし形の添え字
 	    for(let i in this.rhombi){
-		let alist=[];//一つのrhonbi
+		let alist=[];//一つのrhombi
 		//A[i][i]=1;//自分自身も反転
 		for(let j in this.rhombi){
 		    if(this.isAdjacent(this.rhombi[i],this.rhombi[j])){//ひし形iとjが隣接してるなら
@@ -261,6 +294,49 @@ export default{
 	    return Rstr;
 	}	
     }
+}
+function gauss(A) {
+    let n = A.length;//ひし形が何枚あるか
+
+    for (let i=0; i<n; i++) {
+        // Search for maximum in this column 列の中で1を探す
+        let  maxEl = Math.abs(A[i][i]);
+        let maxRow = i;
+        for(let k=i+1; k<n; k++) {
+            if (Math.abs(A[k][i]) > maxEl) {
+                maxEl = Math.abs(A[k][i]);
+                maxRow = k;
+            }
+        }
+
+        // Swap maximum row with current row (column by column) 
+        for (let k=i; k<n+1; k++) {
+            let tmp = A[maxRow][k];
+            A[maxRow][k] = A[i][k];
+            A[i][k] = tmp;
+        }
+
+        // Make all rows below this one 0 in current column
+        for (let k=i+1; k<n; k++) {
+            let c = A[k][i];
+            for(let j=i; j<n+1; j++) {
+                if (i==j) {
+                    A[k][j] = 0;
+                } else {
+                    A[k][j] = (A[k][j]+ c * A[i][j])%2;
+                }
+            }
+        }
+    }
+     // Solve equation Ax=b for an upper triangular matrix A
+    let x= new Array(n);
+    for (let i=n-1; i>-1; i--) {
+        x[i] = A[i][n];
+        for (let k=i-1; k>-1; k--) {
+            A[k][n] = (A[k][n] + A[k][i] * x[i])%2;
+        }
+    }
+    return x;
 }
 
 </script>
